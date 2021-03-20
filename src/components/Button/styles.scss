@@ -1,0 +1,22 @@
+.btn {
+  display: inline-block;
+  height: 4rem;
+  outline: none;
+  cursor: pointer;
+  padding: 0 4rem;
+  text-transform: uppercase;
+  border-radius: 0.4rem;
+  font-size: 1.8rem;
+
+  &--green {
+    color: var(--color-green);
+    border: 1px solid currentColor;
+    background-color: rgba(var(--color-green-rgb), 0.1);
+    transition: all 0.3s ease-in-out;
+
+    &:hover {
+      color: #fff;
+      background: var(--color-green);
+    }
+  }
+}
