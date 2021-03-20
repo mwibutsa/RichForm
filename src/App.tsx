@@ -1,17 +1,11 @@
 import React from "react";
 import "./App.css";
-import Button from "./components/Button";
+import TextEditor from "./components/TextEditor";
 
 const App: React.FC = () => {
   return (
     <div>
-      <Button
-        onClick={() => {
-          console.log("hello");
-        }}
-      >
-        Button
-      </Button>
+      <TextEditor />
     </div>
   );
 };
