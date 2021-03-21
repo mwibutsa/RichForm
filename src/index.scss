@@ -1,0 +1,49 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@500&family=Nunito&display=swap");
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+html {
+  font-size: 62.5%;
+}
+
+body {
+  margin: 0;
+  font-family: "Nunito", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 1.6rem;
+  text-align: center;
+  margin-top: 10%;
+  background-color: #f9f9f9;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+
+  color: var(--color-text-black);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Montserrat", sans-serif;
+  margin: 1rem 0;
+  color: var(--color-text-dark);
+}
+
+:root {
+  --color-green: #44b986;
+  --color-green-rgb: 68, 185, 134;
+  --color-text-black: #333;
+  --color-text-dark: #555;
+  --color-text-light-2: #999999;
+  --color-text-light-1: #777;
+}
