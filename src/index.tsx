@@ -3,24 +3,16 @@ import ReactDOM from "react-dom";
 import "./index.scss";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-import firebase from "firebase/app";
-
+import { Provider } from "react-redux";
+import store from "./redux/store";
+import "./firebase";
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyCvK4PGZMODF-o3JRqXuGcB2bwDacwVpxU",
-  authDomain: "richform-7b503.firebaseapp.com",
-  projectId: "richform-7b503",
-  storageBucket: "richform-7b503.appspot.com",
-  messagingSenderId: "12164980399",
-  appId: "1:12164980399:web:2b9ca0d25a83a5af34fe5a",
-  measurementId: "G-8RTCMCDMLS",
-};
-
-firebase.initializeApp(firebaseConfig);
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <Provider store={store}>
+      <App />
+    </Provider>
   </React.StrictMode>,
   document.getElementById("root")
 );
