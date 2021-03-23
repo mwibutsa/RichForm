@@ -15,9 +15,13 @@
     background-color: rgba(var(--color-green-rgb), 0.1);
     transition: all 0.3s ease-in-out;
 
-    &:hover {
+    &:hover:not(:disabled) {
       color: #fff;
       background: var(--color-green);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
     }
   }
 }
