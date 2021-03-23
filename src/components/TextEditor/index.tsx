@@ -4,6 +4,7 @@ import marked from "marked";
 import { saveFormData } from "../../redux/actions/saveRichFormData";
 import { useDispatch } from "react-redux";
 import { uploadFile } from "../../firebase";
+import Loader from "../Loader";
 import "./styles.scss";
 
 interface TextEditorProps {
@@ -16,52 +17,31 @@ const TAB_OPTIONS = {
 };
 
 const TextEditor: React.FC<TextEditorProps> = () => {
+  const [activeTab, setActiveTab] = useState<string>("edit-tab");
+
+  // form inputs
   const [markdown, setMarkdown] = useState<string>("");
   const [markedText, setMarkedText] = useState<string>("");
   const [title, setTitle] = useState("");
-  const [activeTab, setActiveTab] = useState<string>("edit-tab");
 
-  // files
-
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
+  // form file
   const fileBrowserRef = useRef<HTMLInputElement>(null);
   const dropAreaRef = useRef<HTMLDivElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imageURL, setImageURL] = useState<string | undefined>("");
-
-  useEffect(() => {
-    if (selectedFile) {
-      handleImageUpload();
-    }
-  }, [selectedFile]);
-
-  useEffect(() => {
-    if (imageURL?.length) {
-      setMarkdown((prev) => `${prev} \n ![image](${imageURL})`);
-    }
-  }, [imageURL]);
-
   const dispatch = useDispatch();
 
   const handleTabChange = (activeTab: string) => {
     setActiveTab(activeTab);
   };
-
-  const handleMarkdownChange = ({
-    target: { value },
-  }: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMarkdown(value);
-  };
+  // input change handlers
 
   const handleTitleChange = ({
     target: { value },
   }: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(value);
   };
-
-  useEffect(() => {
-    setMarkedText(marked(markdown));
-  }, [markdown]);
 
   const handleFileSelected = ({
     target: { files },
@@ -70,32 +50,62 @@ const TextEditor: React.FC<TextEditorProps> = () => {
       setSelectedFile(files[0]);
     }
   };
+  const handleMarkdownChange = ({
+    target: { value },
+  }: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMarkdown(value);
+  };
+
+  // upload selected image
+  useEffect(() => {
+    if (selectedFile) {
+      handleImageUpload();
+    }
+  }, [selectedFile]);
+
+  // Add uploaded image to markdown
+
+  useEffect(() => {
+    if (imageURL?.length) {
+      setMarkdown((prev) => `${prev} \n ![image](${imageURL})`);
+    }
+  }, [imageURL]);
+
+  useEffect(() => {
+    setMarkedText(marked(markdown));
+  }, [markdown]);
+
+  // upload Image to firebase
 
   const handleImageUpload = () => {
     if (selectedFile) {
-      uploadFile(selectedFile, setImageURL);
+      setUploading(true);
+      uploadFile(selectedFile, getImageURL);
     }
   };
 
+  // get uploaded image URL
+  const getImageURL = (url: string | undefined): void => {
+    setImageURL(url);
+    setUploading(false);
+  };
+
+  // upload pasted image
   const handlePaseImage = (event: React.ClipboardEvent) => {
     const items = event.clipboardData.files;
     for (const item of items) {
       if (item.type.indexOf("image") === 0) {
-        uploadFile(item, setImageURL);
+        setUploading(true);
+        uploadFile(item, getImageURL);
       }
     }
-  };
-
-  const handleSubmit = () => {
-    saveFormData({
-      title,
-      markedText,
-    })(dispatch);
   };
 
   useEffect(() => {
     if (dropAreaRef?.current) {
       const dropArea = dropAreaRef.current;
+
+      // prevent drag & drop default behavior and stop event propagation
       ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
         dropArea.addEventListener(
           eventName,
@@ -116,6 +126,8 @@ const TextEditor: React.FC<TextEditorProps> = () => {
         false
       );
 
+      // highlight  drop target
+
       ["dragenter", "dragover"].forEach((eventName) => {
         dropArea.addEventListener(
           eventName,
@@ -127,6 +139,8 @@ const TextEditor: React.FC<TextEditorProps> = () => {
         );
       });
 
+      // Get & Upload dropped files
+
       dropArea.addEventListener(
         "drop",
         (e: DragEvent) => {
@@ -137,7 +151,8 @@ const TextEditor: React.FC<TextEditorProps> = () => {
 
           if (files) {
             for (const file of files) {
-              uploadFile(file, setImageURL);
+              setUploading(true);
+              uploadFile(file, getImageURL);
             }
           }
         },
@@ -146,6 +161,15 @@ const TextEditor: React.FC<TextEditorProps> = () => {
     }
   }, []);
 
+  // Submit the form to firebase
+  const handleSubmit = () => {
+    saveFormData({
+      title,
+      markedText,
+    })(dispatch);
+  };
+
+  // JSX RENDER helper functions
   const renderMarkedText = () => {
     if (activeTab === TAB_OPTIONS.preview) {
       return (
@@ -169,6 +193,16 @@ const TextEditor: React.FC<TextEditorProps> = () => {
           onChange={handleMarkdownChange}
           onPaste={handlePaseImage}
         ></textarea>
+      );
+    }
+  };
+
+  const renderLoader = () => {
+    if (activeTab === TAB_OPTIONS.edit && uploading) {
+      return (
+        <div className="editor__loader">
+          <Loader />
+        </div>
       );
     }
   };
@@ -211,11 +245,16 @@ const TextEditor: React.FC<TextEditorProps> = () => {
         <div className="editor__description">
           {renderTextArea()}
           {renderMarkedText()}
+          {renderLoader()}
         </div>
 
         <div
           className="editor__actions"
-          onClick={() => fileBrowserRef.current?.click()}
+          onClick={() => {
+            if (!uploading) {
+              fileBrowserRef.current?.click();
+            }
+          }}
         >
           <input
             type="file"
@@ -227,7 +266,9 @@ const TextEditor: React.FC<TextEditorProps> = () => {
         </div>
       </div>
 
-      <Button onClick={handleSubmit}>Submit</Button>
+      <Button onClick={handleSubmit} disabled={uploading}>
+        Submit
+      </Button>
     </div>
   );
 };
